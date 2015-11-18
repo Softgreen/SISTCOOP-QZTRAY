@@ -1,0 +1,22 @@
+{
+  "name": "sistcoop",
+  "version": "1.2.0.Final",
+  "main": [
+	"src/qz-websocket.js",
+	"src/printer.js",
+	"3rdparty/deployJava.js",
+	"3rdparty/html2canvas.js",
+	"3rdparty/jquery.plugin.html2canvas.js"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "description": "Sistcoop adapter",
+  "keywords": [
+    "sistcoop",
+    "sso",
+    "oauth",
+    "oauth2",
+    "authentication"
+  ]
+}
