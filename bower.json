@@ -4,7 +4,7 @@
   "main": [
 	"src/qz-tray.js",
 	"src/config.js",
-	"src/dependencies/rsvp,min.js",
+	"src/dependencies/rsvp.min.js",
 	"src/dependencies/sha-256.min.js"
   ],
   "ignore": [
