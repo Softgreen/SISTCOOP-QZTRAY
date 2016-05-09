@@ -1,22 +1,17 @@
 {
-  "name": "sistcoop",
+  "name": "sistcoop-qztray",
   "version": "1.2.0.Final",
   "main": [
-	"src/qz-websocket.js",
-	"src/printer.js",
-	"3rdparty/deployJava.js",
-	"3rdparty/html2canvas.js",
-	"3rdparty/jquery.plugin.html2canvas.js"
+	"src/qz-tray.js",
+	"src/config.js",
+	"src/dependencies/rsvp,min.js",
+	"src/dependencies/sha-256.min.js"
   ],
   "ignore": [
     "**/.*"
   ],
-  "description": "Sistcoop adapter",
+  "description": "Sistcoop qz-tray adapter",
   "keywords": [
-    "sistcoop",
-    "sso",
-    "oauth",
-    "oauth2",
-    "authentication"
+    "sistcoop"
   ]
 }
