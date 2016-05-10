@@ -1,5 +1,5 @@
 /// Authentication setup ///
-qz.security.setCertificatePromise(function(resolve, reject) {
+qz.security.setCertificatePromise(function (resolve, reject) {
     //Preferred method - from server
 //        $.ajax("assets/signing/public-key.txt").then(resolve, reject);
 
@@ -69,8 +69,8 @@ qz.security.setCertificatePromise(function(resolve, reject) {
         "-----END CERTIFICATE-----\n");
 });
 
-qz.security.setSignaturePromise(function(toSign) {
-    return function(resolve, reject) {
+qz.security.setSignaturePromise(function (toSign) {
+    return function (resolve, reject) {
         //Preferred method - from server
 //            $.ajax("/secure/url/for/sign-message?request=" + toSign).then(resolve, reject);
 
@@ -85,7 +85,7 @@ function launchQZ() {
     if (!qz.websocket.isActive()) {
         window.location.assign("qz:launch");
         //Retry 5 times, pausing 1 second between each attempt
-        startConnection({ retries: 5, delay: 1 });
+        startConnection({retries: 5, delay: 1});
     }
 }
 
@@ -93,7 +93,7 @@ function startConnection(config) {
     if (!qz.websocket.isActive()) {
         updateState('Waiting', 'default');
 
-        qz.websocket.connect(config).then(function() {
+        qz.websocket.connect(config).then(function () {
             updateState('Active', 'success');
             findVersion();
         }).catch(handleConnectionError);
@@ -104,7 +104,7 @@ function startConnection(config) {
 
 function endConnection() {
     if (qz.websocket.isActive()) {
-        qz.websocket.disconnect().then(function() {
+        qz.websocket.disconnect().then(function () {
             updateState('Inactive', 'default');
         }).catch(handleConnectionError);
     } else {
@@ -113,12 +113,16 @@ function endConnection() {
 }
 
 function listNetworkInfo() {
-    qz.websocket.getNetworkInfo().then(function(data) {
-        if (data.macAddress == null) { data.macAddress = 'UNKNOWN'; }
-        if (data.ipAddress == null) { data.ipAddress = "UNKNOWN"; }
+    qz.websocket.getNetworkInfo().then(function (data) {
+        if (data.macAddress == null) {
+            data.macAddress = 'UNKNOWN';
+        }
+        if (data.ipAddress == null) {
+            data.ipAddress = "UNKNOWN";
+        }
 
         var macFormatted = '';
-        for(var i = 0; i < data.macAddress.length; i++) {
+        for (var i = 0; i < data.macAddress.length; i++) {
             macFormatted += data.macAddress[i];
             if (i % 2 == 1 && i < data.macAddress.length - 1) {
                 macFormatted += ":";
@@ -132,28 +136,15 @@ function listNetworkInfo() {
 
 /// Detection ///
 function findPrinter(name) {
-    qz.printers.find(name).then(function(data) {
-        displayMessage("<strong>Found:</strong> " + data);
-        if (set) { setPrinter(data); }
-    }).catch(displayError);
+    return qz.printers.find(name);
 }
 
-function findDefaultPrinter(set) {
-    qz.printers.getDefault().then(function(data) {
-        displayMessage("<strong>Found:</strong> " + data);
-        if (set) { setPrinter(data); }
-    }).catch(displayError);
+function findDefaultPrinter(success, error) {
+    return qz.printers.getDefault();
 }
 
-function findPrinters() {
-    qz.printers.find().then(function(data) {
-        var list = '';
-        for(var i = 0; i < data.length; i++) {
-            list += "&nbsp; " + data[i] + "<br/>";
-        }
-
-        displayMessage("<strong>Available printers:</strong><br/>" + list);
-    }).catch(displayError);
+function findPrinters(success, error) {
+    return qz.printers.find();
 }
 
 
@@ -170,8 +161,8 @@ function printEPL() {
         'A310,56,0,3,1,1,N,"QZ PRINT APPLET"\n',
         'A310,86,0,3,1,1,N,"TEST PRINT SUCCESSFUL"\n',
         'A310,116,0,3,1,1,N,"FROM SAMPLE.HTML"\n',
-        'A310,146,0,3,1,1,N,"QZINDUSTRIES.COM"\n',
-        { type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: { language: 'EPL', x: 150, y: 300 } },
+        'A310,146,0,3,1,1,N,"QZ.IO"\n',
+        {type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: {language: 'EPL', x: 150, y: 300}},
         '\nP1,1\n'
     ];
 
@@ -184,7 +175,7 @@ function printZPL() {
     var printData = [
         '^XA\n',
         '^FO50,50^ADN,36,20^FDPRINTED USING QZ PRINT PLUGIN ' + qzVersion + '\n',
-        { type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: { language: 'ZPLII' } },
+        {type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: {language: 'ZPLII'}},
         '^FS\n',
         '^XZ\n'
     ];
@@ -196,8 +187,13 @@ function printESCP() {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'raw', format: 'image', data: 'assets/img/image_sample_bw.png', options: { language: 'ESCP', dotDensity: 'single' } },
-        { type: 'raw', data: '\nPrinted using qz-print plugin.\n\n\n\n\n\n' }
+        {
+            type: 'raw',
+            format: 'image',
+            data: 'assets/img/image_sample_bw.png',
+            options: {language: 'ESCP', dotDensity: 'single'}
+        },
+        {type: 'raw', data: '\nPrinted using qz-print plugin.\n\n\n\n\n\n'}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -234,13 +230,15 @@ function convertEPCL(data) {
 
     // Data length for this command, in 2 character Hex (base 16) format
     var len = (data.length + 2).toString(16);
-    if (len.length < 2) { len = '0' + len; }
+    if (len.length < 2) {
+        len = '0' + len;
+    }
 
     return [
-        { type: 'raw', format: 'hex', data: 'x00x00x00' },  // Append 3 NULs
-        { type: 'raw', format: 'hex', data: 'x' + len },    // Append our command length, in base16
-        { type: 'raw', format: 'plain', data: data },       // Append our command
-        { type: 'raw', format: 'plain', data: '\r' }        // Append carriage return
+        {type: 'raw', format: 'hex', data: 'x00x00x00'},  // Append 3 NULs
+        {type: 'raw', format: 'hex', data: 'x' + len},    // Append our command length, in base16
+        {type: 'raw', format: 'plain', data: data},       // Append our command
+        {type: 'raw', format: 'plain', data: '\r'}        // Append carriage return
     ];
 }
 
@@ -337,14 +335,14 @@ function printBase64() {
         }
     ];
 
-    qz.print(config, printData).catch(displayError);
+    return qz.print(config, printData);
 }
 
 function printXML() {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'raw', format: 'xml', data: 'assets/zpl_sample.xml', options: { xmlTag: 'v7:Image' } }
+        {type: 'raw', format: 'xml', data: 'assets/zpl_sample.xml', options: {xmlTag: 'v7:Image'}}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -354,17 +352,17 @@ function printHex() {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'raw', format: 'hex', data: '4e0d0a713630390d0a513230332c32360d0a42352c32362c' },
-        { type: 'raw', format: 'hex', data: '302c31412c332c372c3135322c422c2231323334220d0a41' },
-        { type: 'raw', format: 'hex', data: '3331302c32362c302c332c312c312c4e2c22534b55203030' },
-        { type: 'raw', format: 'hex', data: '303030204d46472030303030220d0a413331302c35362c30' },
-        { type: 'raw', format: 'hex', data: '2c332c312c312c4e2c22515a205072696e7420506c756769' },
-        { type: 'raw', format: 'hex', data: '6e220d0a413331302c38362c302c332c312c312c4e2c2254' },
-        { type: 'raw', format: 'hex', data: '657374207072696e74207375636365737366756c220d0a41' },
-        { type: 'raw', format: 'hex', data: '3331302c3131362c302c332c312c312c4e2c2266726f6d20' },
-        { type: 'raw', format: 'hex', data: '73616d706c652e68746d6c220d0a413331302c3134362c30' },
-        { type: 'raw', format: 'hex', data: '2c332c312c312c4e2c227072696e7448657828292066756e' },
-        { type: 'raw', format: 'hex', data: '6374696f6e2e220d0a50312c310d0a' }
+        {type: 'raw', format: 'hex', data: '4e0d0a713630390d0a513230332c32360d0a42352c32362c'},
+        {type: 'raw', format: 'hex', data: '302c31412c332c372c3135322c422c2231323334220d0a41'},
+        {type: 'raw', format: 'hex', data: '3331302c32362c302c332c312c312c4e2c22534b55203030'},
+        {type: 'raw', format: 'hex', data: '303030204d46472030303030220d0a413331302c35362c30'},
+        {type: 'raw', format: 'hex', data: '2c332c312c312c4e2c22515a205072696e7420506c756769'},
+        {type: 'raw', format: 'hex', data: '6e220d0a413331302c38362c302c332c312c312c4e2c2254'},
+        {type: 'raw', format: 'hex', data: '657374207072696e74207375636365737366756c220d0a41'},
+        {type: 'raw', format: 'hex', data: '3331302c3131362c302c332c312c312c4e2c2266726f6d20'},
+        {type: 'raw', format: 'hex', data: '73616d706c652e68746d6c220d0a413331302c3134362c30'},
+        {type: 'raw', format: 'hex', data: '2c332c312c312c4e2c227072696e7448657828292066756e'},
+        {type: 'raw', format: 'hex', data: '6374696f6e2e220d0a50312c310d0a'}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -374,7 +372,7 @@ function printFile(file) {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'raw', format: 'file', data: 'assets/' + file }
+        {type: 'raw', format: 'file', data: 'assets/' + file}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -412,7 +410,7 @@ function printPDF() {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'pdf', data: 'assets/pdf_sample.pdf' }
+        {type: 'pdf', data: 'assets/pdf_sample.pdf'}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -422,7 +420,7 @@ function printImage() {
     var config = getUpdatedConfig();
 
     var printData = [
-        { type: 'image', data: 'assets/img/image_sample.png' }
+        {type: 'image', data: 'assets/img/image_sample.png'}
     ];
 
     qz.print(config, printData).catch(displayError);
@@ -431,9 +429,9 @@ function printImage() {
 
 /// Serial ///
 function listSerialPorts() {
-    qz.serial.findPorts().then(function(data) {
+    qz.serial.findPorts().then(function (data) {
         var list = '';
-        for(var i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             list += "&nbsp; " + data[i] + "<br/>";
         }
 
@@ -443,7 +441,9 @@ function listSerialPorts() {
 
 function openSerialPort() {
     var widthVal = $("#serialWidth").val();
-    if (!widthVal) { widthVal = null; }
+    if (!widthVal) {
+        widthVal = null;
+    }
 
     var bounds = {
         begin: $("#serialBegin").val(),
@@ -451,7 +451,7 @@ function openSerialPort() {
         width: widthVal
     };
 
-    qz.serial.openPort($("#serialPort").val(), bounds).then(function() {
+    qz.serial.openPort($("#serialPort").val(), bounds).then(function () {
         displayMessage("Serial port opened");
     }).catch(displayError);
 }
@@ -469,7 +469,7 @@ function sendSerialData() {
 }
 
 function closeSerialPort() {
-    qz.serial.closePort($("#serialPort").val()).then(function() {
+    qz.serial.closePort($("#serialPort").val()).then(function () {
         displayMessage("Serial port closed");
     }).catch(displayError);
 }
@@ -477,19 +477,25 @@ function closeSerialPort() {
 
 /// USB ///
 function listUsbDevices() {
-    qz.usb.listDevices(true).then(function(data) {
+    qz.usb.listDevices(true).then(function (data) {
         var list = '';
-        for(var i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             var device = data[i];
-            if (device.hub) { list += "USB Hub"; }
+            if (device.hub) {
+                list += "USB Hub";
+            }
 
             list += "<p>" +
                 "   VendorID: <code>0x" + device.vendorId + "</code>" +
                 usbButton(["usbVendor", "usbProduct"], [device.vendorId, device.productId]) + "<br/>" +
                 "   ProductID: <code>0x" + device.productId + "</code><br/>";
 
-            if (device.manufacturer) { list += "   Manufacturer: <code>" + device.manufacturer + "</code><br/>"; }
-            if (device.product) { list += "   Product: <code>" + device.product + "</code><br/>"; }
+            if (device.manufacturer) {
+                list += "   Manufacturer: <code>" + device.manufacturer + "</code><br/>";
+            }
+            if (device.product) {
+                list += "   Product: <code>" + device.product + "</code><br/>";
+            }
 
             list += "</p><hr/>";
         }
@@ -499,9 +505,9 @@ function listUsbDevices() {
 }
 
 function listUsbDeviceInterfaces() {
-    qz.usb.listInterfaces($("#usbVendor").val(), $("#usbProduct").val()).then(function(data) {
+    qz.usb.listInterfaces($("#usbVendor").val(), $("#usbProduct").val()).then(function (data) {
         var list = '';
-        for(var i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             list += "&nbsp; <code>0x" + data[i] + "</code>" + usbButton(["usbInterface"], [data[i]]) + "<br/>";
         }
 
@@ -510,9 +516,9 @@ function listUsbDeviceInterfaces() {
 }
 
 function listUsbInterfaceEndpoints() {
-    qz.usb.listEndpoints($("#usbVendor").val(), $("#usbProduct").val(), $("#usbInterface").val()).then(function(data) {
+    qz.usb.listEndpoints($("#usbVendor").val(), $("#usbProduct").val(), $("#usbInterface").val()).then(function (data) {
         var list = '';
-        for(var i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             list += "&nbsp; <code>0x" + data[i] + "</code>" + usbButton(["usbEndpoint"], [data[i]]) + "<br/>";
         }
 
@@ -521,7 +527,7 @@ function listUsbInterfaceEndpoints() {
 }
 
 function claimUsbDevice() {
-    qz.usb.claimDevice($("#usbVendor").val(), $("#usbProduct").val(), $("#usbInterface").val()).then(function() {
+    qz.usb.claimDevice($("#usbVendor").val(), $("#usbProduct").val(), $("#usbInterface").val()).then(function () {
         displayMessage("USB Device claimed");
     }).catch(displayError);
 }
@@ -531,19 +537,19 @@ function sendUsbData() {
 }
 
 function readUsbData() {
-    qz.usb.readData($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val(), $("#usbResponse").val()).then(function(data) {
+    qz.usb.readData($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val(), $("#usbResponse").val()).then(function (data) {
         displayMessage("<strong>Raw response:</strong> " + data + "<br/>");
     }).catch(displayError);
 }
 
 function openUsbStream() {
-    qz.usb.openStream($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val(), $("#usbResponse").val(), $("#usbStream").val()).then(function() {
-        pinMessage("Waiting on device", '' + $("#usbVendor").val().replace(/^0x/, '').toLowerCase() + $("#usbProduct").val().replace(/^0x/, '').toLowerCase());
+    qz.usb.openStream($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val(), $("#usbResponse").val(), $("#usbStream").val()).then(function () {
+        pinMessage("Waiting on device", '' + $("#usbVendor").val() + $("#usbProduct").val());
     }).catch(displayError);
 }
 
 function closeUsbStream() {
-    qz.usb.closeStream($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val()).then(function() {
+    qz.usb.closeStream($("#usbVendor").val(), $("#usbProduct").val(), $("#usbEndpoint").val()).then(function () {
         $('#' + $("#usbVendor").val() + $("#usbProduct").val()).attr('id', '').html("Stream closed");
     }).catch(displayError);
 }
@@ -559,7 +565,7 @@ function toggleScale() {
 }
 
 function releaseUsbDevice() {
-    qz.usb.releaseDevice($("#usbVendor").val(), $("#usbProduct").val()).then(function() {
+    qz.usb.releaseDevice($("#usbVendor").val(), $("#usbProduct").val()).then(function () {
         displayMessage("USB Device released");
     }).catch(displayError);
 }
@@ -580,9 +586,11 @@ function resetPixelOptions() {
     $("#pxlDensity").val('');
     $("#pxlDuplex").prop('checked', false);
     $("#pxlInterpolation").val("");
+    $("#pxlJobName").val("");
     $("#pxlOrientation").val("");
     $("#pxlPaperThickness").val(null);
     $("#pxlPrinterTray").val(null);
+    $("#pxlRasterize").prop('checked', true);
     $("#pxlRotation").val(0);
     $("#pxlScale").prop('checked', true);
     $("#pxlUnitsIN").prop('checked', true);
@@ -650,7 +658,7 @@ function resetUsbOptions() {
 
 
 /// Page load ///
-$(document).ready(function() {
+$(document).ready(function () {
     window.readingWeight = false;
 
     resetRawOptions();
@@ -660,7 +668,7 @@ $(document).ready(function() {
 
     startConnection();
 
-    $("#printerSearch").on('keyup', function(e) {
+    $("#printerSearch").on('keyup', function (e) {
         if (e.which == 13 || e.keyCode == 13) {
             findPrinter($('#printerSearch').val(), true);
             return false;
@@ -670,7 +678,7 @@ $(document).ready(function() {
     $("[data-toggle='tooltip']").tooltip();
 });
 
-qz.websocket.setClosedCallbacks(function(evt) {
+qz.websocket.setClosedCallbacks(function (evt) {
     updateState('Inactive', 'default');
     console.log(evt);
 
@@ -681,13 +689,19 @@ qz.websocket.setClosedCallbacks(function(evt) {
 
 qz.websocket.setErrorCallbacks(handleConnectionError);
 
-qz.serial.setSerialCallbacks(function(port, output) {
+qz.serial.setSerialCallbacks(function (port, output) {
     console.log('Serial', port, 'received output', output);
     displayMessage("Received output from serial port [" + port + "]: <em>" + output + "</em>");
 });
 
-qz.usb.setUsbCallbacks(function(keys, data) {
-    var pin = $('#' + keys[0] + keys[1]);
+qz.usb.setUsbCallbacks(function (keys, data) {
+    if (keys[0].substring(0, 2) != '0x') {
+        keys[0] = '0x' + keys[0];
+    }
+    if (keys[1].substring(0, 2) != '0x') {
+        keys[1] = '0x' + keys[1];
+    }
+    var pin = $('#' + (keys[0]) + (keys[1]));
 
     if (data.error == undefined) {
         if (window.readingWeight) {
@@ -704,16 +718,16 @@ qz.usb.setUsbCallbacks(function(keys, data) {
 
 var qzVersion = 0;
 function findVersion() {
-    qz.api.getVersion().then(function(data) {
+    qz.api.getVersion().then(function (data) {
         $("#qz-version").html(data);
         qzVersion = data;
     }).catch(displayError);
 }
 
-$("#askFileModal").on("shown.bs.modal", function() {
+$("#askFileModal").on("shown.bs.modal", function () {
     $("#askFile").focus().select();
 });
-$("#askHostModal").on("shown.bs.modal", function() {
+$("#askHostModal").on("shown.bs.modal", function () {
     $("#askHost").focus().select();
 });
 
@@ -740,9 +754,13 @@ function displayError(err) {
 }
 
 function displayMessage(msg, css) {
-    if (css == undefined) { css = 'alert-info'; }
+    if (css == undefined) {
+        css = 'alert-info';
+    }
 
-    var timeout = setTimeout(function() { $('#' + timeout).alert('close'); }, 5000);
+    var timeout = setTimeout(function () {
+        $('#' + timeout).alert('close');
+    }, 5000);
 
     var alert = $("<div/>").addClass('alert alert-dismissible fade in ' + css)
         .css('max-height', '20em').css('overflow', 'auto')
@@ -753,14 +771,18 @@ function displayMessage(msg, css) {
 }
 
 function pinMessage(msg, id, css) {
-    if (css == undefined) { css = 'alert-info'; }
+    if (css == undefined) {
+        css = 'alert-info';
+    }
 
     var alert = $("<div/>").addClass('alert alert-dismissible fade in ' + css)
         .css('max-height', '20em').css('overflow', 'auto').attr('role', 'alert')
         .html("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
 
     var text = $("<div/>").html(msg);
-    if (id != undefined) { text.attr('id', id); }
+    if (id != undefined) {
+        text.attr('id', id);
+    }
 
     alert.append(text);
 
@@ -785,10 +807,21 @@ function getPath() {
 
 function usbButton(ids, data) {
     var click = "";
-    for (var i in ids) {
+    for (var i = 0; i < ids.length; i++) {
         click += "$('#" + ids[i] + "').val('0x" + data[i] + "');$('#" + ids[i] + "').fadeOut(300).fadeIn(500);";
     }
     return '<button class="btn btn-default btn-xs" onclick="' + click + '" data-dismiss="alert">Use This</button>';
+}
+
+function formatHexInput(inputId) {
+    var $input = $('#' + inputId);
+    var val = $input.val();
+
+    if (val.length > 0 && val.substring(0, 2) != '0x') {
+        val = '0x' + val;
+    }
+
+    $input.val(val.toLowerCase());
 }
 
 
@@ -796,7 +829,7 @@ function usbButton(ids, data) {
 function readScaleData(data) {
     // Get status
     var status = parseInt(data[1], 16);
-    switch(status) {
+    switch (status) {
         case 1: // fault
         case 5: // underweight
         case 6: // overweight
@@ -818,7 +851,9 @@ function readScaleData(data) {
     precision = precision ^ -256; //unsigned to signed
 
     // xor on 0 causes issues
-    if (precision == -256) { precision = 0; }
+    if (precision == -256) {
+        precision = 0;
+    }
 
     // Get weight
     data.splice(0, 4);
@@ -830,7 +865,7 @@ function readScaleData(data) {
 
     // Get units
     var units = parseInt(data[2], 16);
-    switch(units) {
+    switch (units) {
         case 3:
             units = 'kg';
             break;
@@ -894,14 +929,15 @@ function updateConfig() {
 
         colorType: $("#pxlColorType").val(),
         copies: copies,
-        jobName: jobName,
         density: $("#pxlDensity").val(),
         duplex: $("#pxlDuplex").prop('checked'),
         interpolation: $("#pxlInterpolation").val(),
+        jobName: jobName,
         margins: pxlMargins,
         orientation: $("#pxlOrientation").val(),
         paperThickness: $("#pxlPaperThickness").val(),
         printerTray: $("#pxlPrinterTray").val(),
+        rasterize: $("#pxlRasterize").prop('checked'),
         rotation: $("#pxlRotation").val(),
         scaleContent: $("#pxlScale").prop('checked'),
         size: pxlSize,
@@ -910,16 +946,17 @@ function updateConfig() {
 }
 
 function setPrintFile() {
-    setPrinter({ file: $("#askFile").val() });
+    setPrinter({file: $("#askFile").val()});
     $("#askFileModal").modal('hide');
 }
 
 function setPrintHost() {
-    setPrinter({ host: $("#askHost").val(), port: $("#askPort").val() });
+    setPrinter({host: $("#askHost").val(), port: $("#askPort").val()});
     $("#askHostModal").modal('hide');
 }
 
 function setPrinter(printer) {
+    console.log('fera');
     var cf = getUpdatedConfig();
     cf.setPrinter(printer);
 
