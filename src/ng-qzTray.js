@@ -2,7 +2,7 @@
     'use strict';
 
     var module = angular.module('ng-qzTray', [])
-        .constant('QzTray', qz)
+        .constant('QzTray', window.qz)
         .constant('QzTrayOptions', {
             allowHtml: false,
             authentication: 'direct', //direct, server, anonymous
