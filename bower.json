@@ -1,17 +1,17 @@
 {
-  "name": "sistcoop-qztray",
-  "version": "1.2.0.Final",
+  "name": "ng-qzTray",
+  "version": "2.0.0.Final",
   "main": [
     "src/dependencies/rsvp.min.js",
     "src/dependencies/sha-256.min.js",
 	"src/qz-tray.js",
-	"src/config.js"
+	"src/ng-qzTray.js"
   ],
   "ignore": [
     "**/.*"
   ],
-  "description": "Sistcoop qz-tray adapter",
+  "description": "Angularjs QzTray module",
   "keywords": [
-    "sistcoop"
+    "qz-tray"
   ]
 }
