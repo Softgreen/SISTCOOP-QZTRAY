@@ -4,7 +4,7 @@
   "main": [
     "src/dependencies/rsvp.min.js",
     "src/dependencies/sha-256.min.js",
-	"src/qz-tray.js",
+	"src/dependencies/qz-tray.js",
 	"src/ng-qzTray.js"
   ],
   "ignore": [
