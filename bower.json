@@ -3,7 +3,7 @@
   "version": "2.0.0.Final",
   "dependencies": {
     "angular": "^1.4.0",
-    "bluebird": "^3.3.5"
+    "angular-local-storage": "^0.2.7"
   },
   "main": [
     "src/dependencies/rsvp.min.js",
